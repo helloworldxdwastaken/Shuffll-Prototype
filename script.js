@@ -1,9 +1,40 @@
 // Desktop-only functionality
 
-// Volume and fullscreen functionality is now handled in DOMContentLoaded event
+// Onboarding System
+let currentTooltipStep = 1;
+const totalSteps = 5;
+let onboardingCompleted = false;
 
-// Initialize accordion sections - now open by default
+// Check if user has seen onboarding before
+function shouldShowOnboarding() {
+    return !onboardingCompleted;
+}
+
+// Start onboarding on page load
 window.addEventListener('load', function() {
+    if (shouldShowOnboarding()) {
+        startOnboarding();
+    }
+    
+    // Add event listeners to tooltip buttons as backup
+    document.addEventListener('click', function(e) {
+        // Check if click is on a tooltip button
+        if (e.target.classList.contains('tooltip-btn')) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (e.target.classList.contains('primary')) {
+                if (e.target.textContent.trim() === 'Got it!') {
+                    finishOnboarding();
+                } else {
+                    nextTooltip();
+                }
+            } else if (e.target.classList.contains('secondary')) {
+                skipOnboarding();
+            }
+        }
+    });
+    
     // Mark sections as expanded by default
     document.querySelectorAll('.section-card').forEach(card => {
         if (!card.classList.contains('transparent-header')) {
@@ -11,6 +42,119 @@ window.addEventListener('load', function() {
         }
     });
 });
+
+function startOnboarding() {
+    currentTooltipStep = 1;
+    console.log('Starting onboarding at step:', currentTooltipStep);
+    showTooltip(currentTooltipStep);
+    highlightElement(getTargetElement(currentTooltipStep));
+}
+
+function showTooltip(step) {
+    console.log('showTooltip called with step:', step);
+    
+    // Hide all tooltips first
+    document.querySelectorAll('.tooltip').forEach((tooltip, index) => {
+        tooltip.style.display = 'none';
+        tooltip.style.visibility = 'hidden';
+        console.log(`Hiding tooltip ${index + 1}:`, tooltip.id);
+    });
+    
+    // Show current tooltip
+    const currentTooltip = document.getElementById(`tooltip${step}`);
+    console.log('Looking for tooltip ID:', `tooltip${step}`);
+    console.log('Found tooltip element for step', step, ':', currentTooltip);
+    
+    if (currentTooltip) {
+        currentTooltip.style.display = 'block';
+        currentTooltip.style.visibility = 'visible';
+        currentTooltip.style.opacity = '1';
+        
+        // Force a reflow to ensure proper rendering
+        currentTooltip.offsetHeight;
+        
+        console.log('Displayed tooltip', step, 'with styles:', {
+            display: currentTooltip.style.display,
+            visibility: currentTooltip.style.visibility,
+            opacity: currentTooltip.style.opacity
+        });
+    } else {
+        console.error('Tooltip not found for step:', step);
+    }
+    
+    // Show overlay
+    const overlay = document.getElementById('onboardingOverlay');
+    if (overlay) {
+        overlay.classList.remove('hidden');
+        console.log('Overlay shown');
+    }
+}
+
+function nextTooltip() {
+    console.log('nextTooltip called, current step:', currentTooltipStep);
+    
+    // Remove highlight from current element
+    removeAllHighlights();
+    
+    currentTooltipStep++;
+    console.log('Moving to step:', currentTooltipStep);
+    
+    if (currentTooltipStep <= totalSteps) {
+        showTooltip(currentTooltipStep);
+        highlightElement(getTargetElement(currentTooltipStep));
+    } else {
+        finishOnboarding();
+    }
+}
+
+function skipOnboarding() {
+    finishOnboarding();
+}
+
+function finishOnboarding() {
+    // Hide overlay
+    const overlay = document.getElementById('onboardingOverlay');
+    if (overlay) {
+        overlay.classList.add('hidden');
+    }
+    
+    // Remove all highlights
+    removeAllHighlights();
+    
+    // Mark as completed (in memory only)
+    onboardingCompleted = true;
+    
+    currentTooltipStep = 1;
+}
+
+function getTargetElement(step) {
+    switch(step) {
+        case 1: return document.querySelector('.content-sections');
+        case 2: return document.querySelector('.video-frame');
+        case 3: return document.querySelector('.player-controls');
+        case 4: return document.querySelector('.warning-banner');
+        case 5: return document.querySelector('.final-render');
+        default: return null;
+    }
+}
+
+function highlightElement(element) {
+    if (element) {
+        element.classList.add('onboarding-highlight');
+    }
+}
+
+function removeAllHighlights() {
+    document.querySelectorAll('.onboarding-highlight').forEach(element => {
+        element.classList.remove('onboarding-highlight');
+    });
+}
+
+// Add reset onboarding function for testing
+function resetOnboarding() {
+    onboardingCompleted = false;
+    location.reload();
+}
 
 // Expand/collapse section functionality
 document.addEventListener('DOMContentLoaded', function() {
@@ -203,6 +347,70 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 1500);
         });
     });
+
+    // Volume control functionality
+    const volumeBtn = document.querySelector('.control-btn[title="Volume"]');
+    if (volumeBtn) {
+        volumeBtn.addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            if (icon.classList.contains('fa-volume-up')) {
+                icon.className = 'fas fa-volume-mute';
+                this.title = 'Unmute';
+                this.classList.add('muted');
+            } else {
+                icon.className = 'fas fa-volume-up';
+                this.title = 'Volume';
+                this.classList.remove('muted');
+            }
+        });
+    }
+
+    // Fullscreen toggle functionality
+    const fullscreenBtn = document.querySelector('.control-btn[title="Fullscreen"]');
+    if (fullscreenBtn) {
+        fullscreenBtn.addEventListener('click', function() {
+            const videoPlayer = document.querySelector('.video-player');
+            const icon = this.querySelector('i');
+            
+            if (icon.classList.contains('fa-expand')) {
+                // Enter fullscreen
+                icon.className = 'fas fa-compress';
+                this.title = 'Exit Fullscreen';
+                this.classList.add('fullscreen-active');
+                
+                // Apply fullscreen styles
+                videoPlayer.style.position = 'fixed';
+                videoPlayer.style.top = '0';
+                videoPlayer.style.left = '0';
+                videoPlayer.style.width = '100vw';
+                videoPlayer.style.height = '100vh';
+                videoPlayer.style.zIndex = '9999';
+                videoPlayer.style.backgroundColor = '#000';
+                videoPlayer.classList.add('fullscreen-mode');
+                
+                // Hide other UI elements
+                document.body.style.overflow = 'hidden';
+            } else {
+                // Exit fullscreen
+                icon.className = 'fas fa-expand';
+                this.title = 'Fullscreen';
+                this.classList.remove('fullscreen-active');
+                
+                // Remove fullscreen styles
+                videoPlayer.style.position = 'relative';
+                videoPlayer.style.top = 'auto';
+                videoPlayer.style.left = 'auto';
+                videoPlayer.style.width = '100%';
+                videoPlayer.style.height = 'auto';
+                videoPlayer.style.zIndex = 'auto';
+                videoPlayer.style.backgroundColor = 'transparent';
+                videoPlayer.classList.remove('fullscreen-mode');
+                
+                // Restore UI elements
+                document.body.style.overflow = 'auto';
+            }
+        });
+    }
 });
 
 // Keyboard shortcuts

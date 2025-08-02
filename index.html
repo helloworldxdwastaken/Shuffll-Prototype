@@ -11,14 +11,19 @@
 <body>
     <div class="app-container">
         <!-- Onboarding Tooltips -->
-        <div class="onboarding-overlay" id="onboardingOverlay">
+        <div class="onboarding-overlay hidden" id="onboardingOverlay">
             <div class="tooltip" id="tooltip1" data-step="1">
                 <div class="tooltip-content">
                     <div class="tooltip-header">
                         <span class="tooltip-title">Project Status Overview</span>
                         <span class="tooltip-step">1/5</span>
                     </div>
-                    <p>Review and modify your project elements. You can change your best take, background music, and edit subtitles here.</p>
+                    <p><strong>Requirement:</strong> "Project Status Overview"</p>
+                    <p>✅ Best Take (view/replace)<br>
+                    ✅ Background Music (view/replace)<br>
+                    ✅ AI Avatar (preview)<br>
+                    ✅ Subtitles (edit)</p>
+                    <p><em>UX Enhancement:</em> Collapsible panels for better focus.</p>
                     <div class="tooltip-actions">
                         <button class="tooltip-btn secondary" onclick="skipOnboarding()">Skip Tour</button>
                         <button class="tooltip-btn primary" onclick="nextTooltip()">Next</button>
@@ -27,13 +32,17 @@
                 <div class="tooltip-arrow"></div>
             </div>
 
-            <div class="tooltip" id="tooltip2" data-step="2" style="display: none;">
+            <div class="tooltip" id="tooltip2" data-step="2">
                 <div class="tooltip-content">
                     <div class="tooltip-header">
                         <span class="tooltip-title">Video Preview</span>
                         <span class="tooltip-step">2/5</span>
                     </div>
-                    <p>Watch your nearly finished video here. Note that lip sync will only be accurate after final rendering.</p>
+                    <p><strong>Requirement:</strong> "Built-in video preview area"</p>
+                    <p>✅ Responsive video player<br>
+                    ✅ Proper aspect ratio (16:9)<br>
+                    ✅ Thumbnail background<br>
+                    ✅ Play icon centered</p>
                     <div class="tooltip-actions">
                         <button class="tooltip-btn secondary" onclick="skipOnboarding()">Skip Tour</button>
                         <button class="tooltip-btn primary" onclick="nextTooltip()">Next</button>
@@ -42,13 +51,18 @@
                 <div class="tooltip-arrow"></div>
             </div>
 
-            <div class="tooltip" id="tooltip3" data-step="3" style="display: none;">
+            <div class="tooltip" id="tooltip3" data-step="3">
                 <div class="tooltip-content">
                     <div class="tooltip-header">
                         <span class="tooltip-title">Video Controls</span>
                         <span class="tooltip-step">3/5</span>
                     </div>
-                    <p>Use these controls to play, pause, adjust volume, and view in fullscreen. You can also navigate through your video timeline.</p>
+                    <p><strong>Requirement:</strong> "Basic video controls"</p>
+                    <p>✅ Play/pause (center)<br>
+                    ✅ Timeline navigation<br>
+                    ✅ Volume control (left)<br>
+                    ✅ Fullscreen (right)</p>
+                    <p><em>Bonus:</em> Keyboard shortcuts (Space, F, M, ESC)</p>
                     <div class="tooltip-actions">
                         <button class="tooltip-btn secondary" onclick="skipOnboarding()">Skip Tour</button>
                         <button class="tooltip-btn primary" onclick="nextTooltip()">Next</button>
@@ -57,13 +71,17 @@
                 <div class="tooltip-arrow"></div>
             </div>
 
-            <div class="tooltip" id="tooltip4" data-step="4" style="display: none;">
+            <div class="tooltip" id="tooltip4" data-step="4">
                 <div class="tooltip-content">
                     <div class="tooltip-header">
                         <span class="tooltip-title">Lip Sync Notice</span>
                         <span class="tooltip-step">4/5</span>
                     </div>
-                    <p>Important: The final lip sync will be accurate only after rendering. What you see in preview is close but not final.</p>
+                    <p><strong>Requirement:</strong> "Lip sync note/indicator"</p>
+                    <p>✅ Prominent warning banner<br>
+                    ✅ Icon for visibility<br>
+                    ✅ Positioned above video</p>
+                    <p><em>Clear messaging:</em> "Final lip sync will be accurate after rendering"</p>
                     <div class="tooltip-actions">
                         <button class="tooltip-btn secondary" onclick="skipOnboarding()">Skip Tour</button>
                         <button class="tooltip-btn primary" onclick="nextTooltip()">Next</button>
@@ -72,13 +90,18 @@
                 <div class="tooltip-arrow"></div>
             </div>
 
-            <div class="tooltip" id="tooltip5" data-step="5" style="display: none;">
+            <div class="tooltip" id="tooltip5" data-step="5">
                 <div class="tooltip-content">
                     <div class="tooltip-header">
                         <span class="tooltip-title">Ready to Render</span>
                         <span class="tooltip-step">5/5</span>
                     </div>
-                    <p>When you're satisfied with everything, click here to start the final rendering process. This is your primary action!</p>
+                    <p><strong>Requirement:</strong> "Primary CTA Render button"</p>
+                    <p>✅ Prominent purple design<br>
+                    ✅ Rocket icon for action<br>
+                    ✅ Status: "All elements configured"<br>
+                    ✅ Details: MP4, 1080p, time estimate</p>
+                    <p><em>Clear hierarchy:</em> Main action users should take</p>
                     <div class="tooltip-actions">
                         <button class="tooltip-btn secondary" onclick="skipOnboarding()">Skip Tour</button>
                         <button class="tooltip-btn primary" onclick="finishOnboarding()">Got it!</button>
