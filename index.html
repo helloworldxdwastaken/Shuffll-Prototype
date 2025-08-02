@@ -9,16 +9,91 @@
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div class="mobile-overlay" id="mobileOverlay" onclick="toggleSidebar()"></div>
-    
     <div class="app-container">
+        <!-- Onboarding Tooltips -->
+        <div class="onboarding-overlay" id="onboardingOverlay">
+            <div class="tooltip" id="tooltip1" data-step="1">
+                <div class="tooltip-content">
+                    <div class="tooltip-header">
+                        <span class="tooltip-title">Project Status Overview</span>
+                        <span class="tooltip-step">1/5</span>
+                    </div>
+                    <p>Review and modify your project elements. You can change your best take, background music, and edit subtitles here.</p>
+                    <div class="tooltip-actions">
+                        <button class="tooltip-btn secondary" onclick="skipOnboarding()">Skip Tour</button>
+                        <button class="tooltip-btn primary" onclick="nextTooltip()">Next</button>
+                    </div>
+                </div>
+                <div class="tooltip-arrow"></div>
+            </div>
+
+            <div class="tooltip" id="tooltip2" data-step="2" style="display: none;">
+                <div class="tooltip-content">
+                    <div class="tooltip-header">
+                        <span class="tooltip-title">Video Preview</span>
+                        <span class="tooltip-step">2/5</span>
+                    </div>
+                    <p>Watch your nearly finished video here. Note that lip sync will only be accurate after final rendering.</p>
+                    <div class="tooltip-actions">
+                        <button class="tooltip-btn secondary" onclick="skipOnboarding()">Skip Tour</button>
+                        <button class="tooltip-btn primary" onclick="nextTooltip()">Next</button>
+                    </div>
+                </div>
+                <div class="tooltip-arrow"></div>
+            </div>
+
+            <div class="tooltip" id="tooltip3" data-step="3" style="display: none;">
+                <div class="tooltip-content">
+                    <div class="tooltip-header">
+                        <span class="tooltip-title">Video Controls</span>
+                        <span class="tooltip-step">3/5</span>
+                    </div>
+                    <p>Use these controls to play, pause, adjust volume, and view in fullscreen. You can also navigate through your video timeline.</p>
+                    <div class="tooltip-actions">
+                        <button class="tooltip-btn secondary" onclick="skipOnboarding()">Skip Tour</button>
+                        <button class="tooltip-btn primary" onclick="nextTooltip()">Next</button>
+                    </div>
+                </div>
+                <div class="tooltip-arrow"></div>
+            </div>
+
+            <div class="tooltip" id="tooltip4" data-step="4" style="display: none;">
+                <div class="tooltip-content">
+                    <div class="tooltip-header">
+                        <span class="tooltip-title">Lip Sync Notice</span>
+                        <span class="tooltip-step">4/5</span>
+                    </div>
+                    <p>Important: The final lip sync will be accurate only after rendering. What you see in preview is close but not final.</p>
+                    <div class="tooltip-actions">
+                        <button class="tooltip-btn secondary" onclick="skipOnboarding()">Skip Tour</button>
+                        <button class="tooltip-btn primary" onclick="nextTooltip()">Next</button>
+                    </div>
+                </div>
+                <div class="tooltip-arrow"></div>
+            </div>
+
+            <div class="tooltip" id="tooltip5" data-step="5" style="display: none;">
+                <div class="tooltip-content">
+                    <div class="tooltip-header">
+                        <span class="tooltip-title">Ready to Render</span>
+                        <span class="tooltip-step">5/5</span>
+                    </div>
+                    <p>When you're satisfied with everything, click here to start the final rendering process. This is your primary action!</p>
+                    <div class="tooltip-actions">
+                        <button class="tooltip-btn secondary" onclick="skipOnboarding()">Skip Tour</button>
+                        <button class="tooltip-btn primary" onclick="finishOnboarding()">Got it!</button>
+                    </div>
+                </div>
+                <div class="tooltip-arrow"></div>
+            </div>
+        </div>
         <!-- Sidebar -->
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="logo">
                     <img src="icons/Shuffl logo.svg" alt="Shuffl Logo" class="logo-icon">
                 </div>
-                <button class="menu-toggle" onclick="toggleSidebar()">
+                <button class="menu-toggle" style="display: none;">
                     <img src="icons/hamburger icon.svg" alt="Menu" class="menu-icon">
                 </button>
             </div>
@@ -65,9 +140,6 @@
 
         <!-- Main Content -->
         <main class="main-content" id="mainContent">
-            <button class="menu-toggle mobile-menu-btn" onclick="toggleSidebar()">
-                <img src="icons/hamburger icon.svg" alt="Menu" class="menu-icon">
-            </button>
 
             <!-- Video Section -->
             <div class="video-section">
@@ -134,24 +206,17 @@
                         </div>
 
                         <div class="player-controls">
-                            <div class="control-group">
-                                <button class="control-btn" title="Previous (←)">
-                                    <i class="fas fa-step-backward"></i>
-                                </button>
-                                <button class="control-btn primary" title="Play/Pause (Space)">
-                                    <i class="fas fa-pause"></i>
-                                </button>
-                                <button class="control-btn" title="Next (→)">
-                                    <i class="fas fa-step-forward"></i>
-                                </button>
-                            </div>
-                            <div class="control-group">
+                            <div class="control-group-left">
                                 <button class="control-btn" title="Volume">
                                     <i class="fas fa-volume-up"></i>
                                 </button>
-                                <button class="control-btn" title="Settings">
-                                    <i class="fas fa-cog"></i>
+                            </div>
+                            <div class="control-group-center">
+                                <button class="control-btn primary" title="Play/Pause (Space)">
+                                    <i class="fas fa-pause"></i>
                                 </button>
+                            </div>
+                            <div class="control-group-right">
                                 <button class="control-btn" title="Fullscreen">
                                     <i class="fas fa-expand"></i>
                                 </button>
@@ -163,9 +228,9 @@
 
             <!-- Right Controls Panel -->
             <aside class="controls-panel">
-                <div class="section-card">
-                    <div class="section-header">
-                        <h2 class="section-title">Final Screen</h2>
+                <div class="section-card transparent-header">
+                    <div class="section-header" style="padding: 23px 0;">
+                        <h2 class="section-title"></h2>
                     </div>
                 </div>
 
@@ -185,7 +250,7 @@
                                     </div>
                                     <div class="item-details">
                                         <div class="item-title">Best Take Selected</div>
-                                        <div class="item-subtitle">Take #3 • 4:56 duration • High quality</div>
+                                        <div class="item-subtitle">Take #3 • 4:56 duration</div>
                                     </div>
                                 </div>
                                 <div class="item-actions">

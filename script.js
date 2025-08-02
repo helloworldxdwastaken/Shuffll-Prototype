@@ -1,60 +1,71 @@
-// Mobile sidebar functionality
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const mobileOverlay = document.getElementById('mobileOverlay');
-    const menuToggle = document.querySelector('.mobile-menu-btn');
-    
-    if (window.innerWidth <= 1024) {
-        sidebar.classList.toggle('open');
-        mobileOverlay.classList.toggle('active');
-        
-        // Update menu button icon
-        const icon = menuToggle.querySelector('.menu-icon');
-        if (sidebar.classList.contains('open')) {
-            // Keep the same hamburger icon, just rotate it or change opacity
-            icon.style.transform = 'rotate(90deg)';
-        } else {
-            icon.style.transform = 'rotate(0deg)';
-        }
-    }
-}
+// Desktop-only functionality
 
-// Handle window resize
-window.addEventListener('resize', function() {
-    const sidebar = document.getElementById('sidebar');
-    const mobileOverlay = document.getElementById('mobileOverlay');
-    const menuToggle = document.querySelector('.mobile-menu-btn');
-    
-    if (window.innerWidth > 1024) {
-        sidebar.classList.remove('open');
-        mobileOverlay.classList.remove('active');
-        menuToggle.style.display = 'none';
-    } else {
-        menuToggle.style.display = 'block';
-    }
-});
+// Volume and fullscreen functionality is now handled in DOMContentLoaded event
 
-// Initialize menu button visibility
+// Initialize accordion sections - now open by default
 window.addEventListener('load', function() {
-    const menuToggle = document.querySelector('.mobile-menu-btn');
-    if (window.innerWidth <= 1024) {
-        menuToggle.style.display = 'block';
-    }
+    // Mark sections as expanded by default
+    document.querySelectorAll('.section-card').forEach(card => {
+        if (!card.classList.contains('transparent-header')) {
+            card.classList.add('expanded');
+        }
+    });
 });
 
 // Expand/collapse section functionality
 document.addEventListener('DOMContentLoaded', function() {
+    // Enhanced accordion functionality
     document.querySelectorAll('.expand-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
             const content = this.closest('.section-card').querySelector('.section-content');
             const icon = this.querySelector('i');
+            const sectionCard = this.closest('.section-card');
             
-            if (content.style.display === 'none') {
+            if (content.classList.contains('hidden')) {
+                // Show content with smooth animation
+                content.classList.remove('hidden');
                 content.style.display = 'block';
-                icon.style.transform = 'rotate(0deg)';
+                content.style.opacity = '0';
+                
+                // Temporarily set height to auto to measure content
+                content.style.height = 'auto';
+                const height = content.scrollHeight;
+                content.style.height = '0px';
+                
+                // Force a reflow then animate to full height
+                requestAnimationFrame(() => {
+                    content.style.height = height + 'px';
+                    content.style.opacity = '1';
+                    content.style.transform = 'translateY(0)';
+                });
+                
+                // After animation completes, set to auto for responsive behavior
+                setTimeout(() => {
+                    content.style.height = 'auto';
+                }, 300);
+                
+                icon.className = 'fas fa-chevron-down';
+                sectionCard.classList.add('expanded');
             } else {
-                content.style.display = 'none';
-                icon.style.transform = 'rotate(-90deg)';
+                // Hide content with smooth animation
+                const height = content.scrollHeight;
+                content.style.height = height + 'px';
+                
+                // Force reflow then animate to 0
+                requestAnimationFrame(() => {
+                    content.style.height = '0px';
+                    content.style.opacity = '0';
+                    content.style.transform = 'translateY(-5px)';
+                });
+                
+                // Add hidden class after animation
+                setTimeout(() => {
+                    content.classList.add('hidden');
+                }, 300);
+                
+                icon.className = 'fas fa-chevron-right';
+                sectionCard.classList.remove('expanded');
             }
         });
     });
@@ -76,25 +87,79 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Timeline interaction
-    document.querySelectorAll('.timeline-item').forEach((item, index) => {
-        item.addEventListener('click', function() {
-            // Remove active class from all items
-            document.querySelectorAll('.timeline-item').forEach(i => {
-                i.querySelector('.timeline-block').classList.remove('active');
-                i.querySelector('.timeline-time').classList.remove('active');
-            });
-            
-            // Add active class to clicked item
-            this.querySelector('.timeline-block').classList.add('active');
-            this.querySelector('.timeline-time').classList.add('active');
+    // Progress bar interaction for scene navigation
+    const progressBar = document.querySelector('.progress-bar');
+    const progressFill = document.querySelector('.progress-fill');
+    const timelineItems = document.querySelectorAll('.timeline-item');
+    const timeline = document.querySelector('.timeline');
+    
+    if (progressBar && progressFill) {
+        progressBar.addEventListener('click', function(e) {
+            const rect = progressBar.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const percentage = (clickX / rect.width) * 100;
             
             // Update progress bar
-            const progressFill = document.querySelector('.progress-fill');
-            const progress = (index / (document.querySelectorAll('.timeline-item').length - 1)) * 100;
-            progressFill.style.width = progress + '%';
+            progressFill.style.width = percentage + '%';
+            
+            // Show timeline when clicking
+            if (timeline) {
+                timeline.classList.add('show');
+            }
+            
+            // Find corresponding timeline item
+            const itemIndex = Math.floor((percentage / 100) * timelineItems.length);
+            const clampedIndex = Math.max(0, Math.min(itemIndex, timelineItems.length - 1));
+            
+            // Update timeline active state
+            timelineItems.forEach(item => {
+                item.querySelector('.timeline-block').classList.remove('active');
+                item.querySelector('.timeline-time').classList.remove('active');
+            });
+            
+            if (timelineItems[clampedIndex]) {
+                timelineItems[clampedIndex].querySelector('.timeline-block').classList.add('active');
+                timelineItems[clampedIndex].querySelector('.timeline-time').classList.add('active');
+            }
         });
-    });
+        
+        // Add hover effect to show scene preview with persistence
+        let hoverTimeout;
+        progressBar.addEventListener('mouseenter', function() {
+            clearTimeout(hoverTimeout);
+            if (timeline) {
+                timeline.classList.add('show');
+                timeline.style.opacity = '1';
+                timeline.style.transform = 'scaleY(1.1)';
+            }
+        });
+        
+        // Keep timeline visible when hovering over it
+        if (timeline) {
+            timeline.addEventListener('mouseenter', function() {
+                clearTimeout(hoverTimeout);
+                this.classList.add('show');
+            });
+            
+            timeline.addEventListener('mouseleave', function() {
+                hoverTimeout = setTimeout(() => {
+                    this.classList.remove('show');
+                    this.style.opacity = '0.8';
+                    this.style.transform = 'scaleY(1)';
+                }, 300); // 300ms delay before hiding
+            });
+        }
+        
+        progressBar.addEventListener('mouseleave', function() {
+            hoverTimeout = setTimeout(() => {
+                if (timeline) {
+                    timeline.classList.remove('show');
+                    timeline.style.opacity = '0.8';
+                    timeline.style.transform = 'scaleY(1)';
+                }
+            }, 300); // 300ms delay before hiding
+        });
+    }
 
     // Render button functionality
     const renderBtn = document.querySelector('.render-btn');
@@ -186,39 +251,48 @@ document.addEventListener('keydown', function(e) {
         }
     }
     
-    // Escape to close mobile menu
+    // Escape to exit fullscreen
     if (e.code === 'Escape') {
-        const sidebar = document.getElementById('sidebar');
-        if (sidebar && sidebar.classList.contains('open')) {
-            toggleSidebar();
+        const fullscreenBtn = document.querySelector('.control-btn[title="Exit Fullscreen"]');
+        
+        if (fullscreenBtn) {
+            fullscreenBtn.click();
+        }
+    }
+    
+    // F key for fullscreen toggle
+    if (e.code === 'KeyF') {
+        e.preventDefault();
+        const fullscreenBtn = document.querySelector('.control-btn[title="Fullscreen"], .control-btn[title="Exit Fullscreen"]');
+        if (fullscreenBtn) {
+            fullscreenBtn.click();
+        }
+    }
+    
+    // M key for mute/unmute
+    if (e.code === 'KeyM') {
+        e.preventDefault();
+        const volumeBtn = document.querySelector('.control-btn[title="Volume"], .control-btn[title="Unmute"]');
+        if (volumeBtn) {
+            volumeBtn.click();
         }
     }
 });
 
 // Progress bar animation
 function animateProgress() {
-    const progressFill = document.querySelector('.progress-fill');
-    if (!progressFill) return;
-    
-    let width = parseInt(progressFill.style.width) || 42;
-    const interval = setInterval(() => {
-        width += 0.1;
-        if (width >= 100) {
-            width = 0;
-        }
-        progressFill.style.width = width + '%';
-    }, 100);
-    
-    // Stop animation when page is hidden
-    document.addEventListener('visibilitychange', function() {
-        if (document.hidden) {
-            clearInterval(interval);
-        }
-    });
+    // Removed auto-animation - progress bar should stay static
+    // Only update when user interacts with it
 }
 
-// Start progress animation when page loads
-window.addEventListener('load', animateProgress);
+// Keep progress static when page loads
+window.addEventListener('load', function() {
+    const progressFill = document.querySelector('.progress-fill');
+    if (progressFill) {
+        // Set initial position and stop any animation
+        progressFill.style.width = '42%';
+    }
+});
 
 // Smooth scrolling for anchor links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -234,45 +308,69 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Volume control simulation
-document.querySelector('.control-btn[title="Volume"]')?.addEventListener('click', function() {
-    const icon = this.querySelector('i');
-    if (icon.classList.contains('fa-volume-up')) {
-        icon.className = 'fas fa-volume-mute';
-        this.title = 'Unmute';
-    } else {
-        icon.className = 'fas fa-volume-up';
-        this.title = 'Volume';
+    // Volume control functionality
+    const volumeBtn = document.querySelector('.control-btn[title="Volume"]');
+    if (volumeBtn) {
+        volumeBtn.addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            if (icon.classList.contains('fa-volume-up')) {
+                icon.className = 'fas fa-volume-mute';
+                this.title = 'Unmute';
+                this.classList.add('muted');
+            } else {
+                icon.className = 'fas fa-volume-up';
+                this.title = 'Volume';
+                this.classList.remove('muted');
+            }
+        });
     }
-});
 
-// Fullscreen toggle simulation
-document.querySelector('.control-btn[title="Fullscreen"]')?.addEventListener('click', function() {
-    const videoPlayer = document.querySelector('.video-player');
-    const icon = this.querySelector('i');
-    
-    if (icon.classList.contains('fa-expand')) {
-        icon.className = 'fas fa-compress';
-        this.title = 'Exit Fullscreen';
-        videoPlayer.style.position = 'fixed';
-        videoPlayer.style.top = '0';
-        videoPlayer.style.left = '0';
-        videoPlayer.style.width = '100vw';
-        videoPlayer.style.height = '100vh';
-        videoPlayer.style.zIndex = '9999';
-        videoPlayer.style.backgroundColor = '#000';
-    } else {
-        icon.className = 'fas fa-expand';
-        this.title = 'Fullscreen';
-        videoPlayer.style.position = 'relative';
-        videoPlayer.style.top = 'auto';
-        videoPlayer.style.left = 'auto';
-        videoPlayer.style.width = '100%';
-        videoPlayer.style.height = 'auto';
-        videoPlayer.style.zIndex = 'auto';
-        videoPlayer.style.backgroundColor = 'transparent';
+    // Fullscreen toggle functionality
+    const fullscreenBtn = document.querySelector('.control-btn[title="Fullscreen"]');
+    if (fullscreenBtn) {
+        fullscreenBtn.addEventListener('click', function() {
+            const videoPlayer = document.querySelector('.video-player');
+            const icon = this.querySelector('i');
+            
+            if (icon.classList.contains('fa-expand')) {
+                // Enter fullscreen
+                icon.className = 'fas fa-compress';
+                this.title = 'Exit Fullscreen';
+                this.classList.add('fullscreen-active');
+                
+                // Apply fullscreen styles
+                videoPlayer.style.position = 'fixed';
+                videoPlayer.style.top = '0';
+                videoPlayer.style.left = '0';
+                videoPlayer.style.width = '100vw';
+                videoPlayer.style.height = '100vh';
+                videoPlayer.style.zIndex = '9999';
+                videoPlayer.style.backgroundColor = '#000';
+                videoPlayer.classList.add('fullscreen-mode');
+                
+                // Hide other UI elements
+                document.body.style.overflow = 'hidden';
+            } else {
+                // Exit fullscreen
+                icon.className = 'fas fa-expand';
+                this.title = 'Fullscreen';
+                this.classList.remove('fullscreen-active');
+                
+                // Remove fullscreen styles
+                videoPlayer.style.position = 'relative';
+                videoPlayer.style.top = 'auto';
+                videoPlayer.style.left = 'auto';
+                videoPlayer.style.width = '100%';
+                videoPlayer.style.height = 'auto';
+                videoPlayer.style.zIndex = 'auto';
+                videoPlayer.style.backgroundColor = 'transparent';
+                videoPlayer.classList.remove('fullscreen-mode');
+                
+                // Restore UI elements
+                document.body.style.overflow = 'auto';
+            }
+        });
     }
-});
 
 // Navigation item highlighting
 document.querySelectorAll('.nav-item').forEach(item => {
@@ -287,10 +385,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
         // Add active class to clicked item
         this.classList.add('active');
         
-        // Close mobile menu if open
-        if (window.innerWidth <= 1024) {
-            setTimeout(() => toggleSidebar(), 200);
-        }
+        // Close mobile menu if open - removed for desktop only
     });
 });
 
@@ -315,32 +410,6 @@ function safeQuerySelector(selector) {
     }
 }
 
-// Performance optimization: Debounce resize events
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// Apply debounced resize handler
-window.addEventListener('resize', debounce(function() {
-    const sidebar = document.getElementById('sidebar');
-    const mobileOverlay = document.getElementById('mobileOverlay');
-    const menuToggle = document.querySelector('.mobile-menu-btn');
-    
-    if (window.innerWidth > 1024) {
-        sidebar?.classList.remove('open');
-        mobileOverlay?.classList.remove('active');
-        if (menuToggle) menuToggle.style.display = 'none';
-    } else {
-        if (menuToggle) menuToggle.style.display = 'block';
-    }
-}, 250));
+// Desktop-only - resize handling removed
 
 console.log('MyVideo App loaded successfully! 🎬');
